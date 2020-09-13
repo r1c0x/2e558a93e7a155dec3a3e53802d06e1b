@@ -1,0 +1,12 @@
+{{ if .Values.wordpress.configmap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.wordpress.deployment.name }}-config-{{ .Values.wordpress.deployment.version| replace "." "-" }}
+  labels:
+    app: {{ .Values.wordpress.deployment.name }}
+    version: {{ .Values.wordpress.deployment.version | quote }}
+    environment: {{ .Values.wordpress.deployment.environment }}
+data:
+  {{- toYaml .Values.wordpress.configmap.data | trim | nindent 2 }}
+{{ end }}

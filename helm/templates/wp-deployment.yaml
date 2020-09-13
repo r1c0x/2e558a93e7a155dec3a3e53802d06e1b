@@ -1,0 +1,65 @@
+{{ if .Values.wordpress.deployment }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.wordpress.deployment.name }}-deploy-{{ .Values.wordpress.deployment.version| replace "." "-" }}
+spec:
+  replicas: {{ .Values.wordpress.deployment.replicas }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.wordpress.deployment.maxUnavailable }}
+      maxSurge: {{ .Values.wordpress.deployment.maxSurge }}
+  template:
+    metadata:
+      annotations:
+        timestamp: {{ .Values.wordpress.deployment.timestamp | default "nil" | quote }}
+      labels:
+        app: {{ .Values.wordpress.deployment.name }}
+        version: {{ .Values.wordpress.deployment.version | quote }}
+        environment: {{ .Values.wordpress.deployment.environment }}
+    spec:
+      {{- if .Values.serviceaccount }}
+      serviceAccountName: {{ .Values.wordpress.deployment.name }}-serviceaccount-{{ .Values.wordpress.deployment.version| replace "." "-" }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.wordpress.deployment.name }}
+          image: {{ .Values.wordpress.deployment.image }}:{{ .Values.wordpress.deployment.version }}
+          envFrom:
+          {{- if .Values.wordpress.configmap }}
+          - configMapRef:
+              name: {{ .Values.wordpress.deployment.name }}-config-{{ .Values.wordpress.deployment.version| replace "." "-" }}
+          {{- end }}
+          {{- if .Values.wordpress.deployment.env }}
+          env:
+{{ toYaml .Values.wordpress.deployment.env | trim | indent 12 }}
+          {{- end }}
+          {{- if .Values.wordpress.secret }}
+          - secretRef:
+              name: {{ .Values.wordpress.deployment.name }}-secret-{{ .Values.wordpress.deployment.version| replace "." "-" }}
+          {{- end }}
+          imagePullPolicy: Always
+          args:
+            {{- range .Values.wordpress.deployment.args }}
+            - {{ . | quote }}
+            {{- end }}
+          resources:
+{{ toYaml .Values.wordpress.deployment.resources | trim | indent 12 }}
+          ports:
+{{ toYaml .Values.wordpress.deployment.ports | trim | indent 12 }}
+          {{- if .Values.wordpress.deployment.volumeMounts }}
+          volumeMounts:
+            - name: {{ .Values.wordpress.deployment.name }}-wp-pvc
+              mountPath: {{ .Values.wordpress.deployment.volumemountspath }}
+          {{- end }}
+      {{- if .Values.wppvcvolumes }}
+      volumes:
+        - name: {{ .Values.wordpress.deployment.name }}-wp-pvc
+          persistentVolumeClaim:
+            claimName: {{ .Values.wordpress.deployment.name }}-wp-pvc
+      {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.wordpress.deployment.name }}
+      version: {{ .Values.wordpress.deployment.version | quote }}
+      environment: {{ .Values.wordpress.deployment.environment }}
+{{ end }}

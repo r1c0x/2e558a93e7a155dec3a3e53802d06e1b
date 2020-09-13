@@ -1,0 +1,16 @@
+{{ if .Values.wordpress.pvcvolumes }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.wordpress.deployment.name }}-pvc
+  labels:
+    app: {{ .Values.wordpress.deployment.name }}
+    version: {{ .Values.wordpress.deployment.version | quote }}
+    environment: {{ .Values.wordpress.deployment.environment }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.wordpress.pvcvolumes.storage }}
+{{ end }}

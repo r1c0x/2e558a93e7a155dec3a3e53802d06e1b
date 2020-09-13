@@ -1,0 +1,16 @@
+{{ if .Values.mysql.pvcvolumes }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mysql.deployment.name }}-pvc
+  labels:
+    app: {{ .Values.mysql.deployment.name }}
+    version: {{ .Values.mysql.deployment.version | quote }}
+    environment: {{ .Values.mysql.deployment.environment }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mysql.pvcvolumes.storage }}
+{{ end }}

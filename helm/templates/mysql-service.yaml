@@ -1,0 +1,16 @@
+{{ if .Values.mysql.service }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.mysql.deployment.name }}-svc
+  labels:
+    app: {{ .Values.mysql.deployment.name }}
+    environment: {{ .Values.mysql.deployment.environment }}
+spec:
+  type: {{ .Values.mysql.service.type }}
+  ports:
+{{ toYaml .Values.mysql.service.ports | trim | indent 2 }}
+  selector:
+    app: {{ .Values.mysql.deployment.name }}
+    environment: {{ .Values.mysql.deployment.environment }}
+{{ end }}

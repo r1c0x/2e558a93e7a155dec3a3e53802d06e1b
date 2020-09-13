@@ -1,0 +1,18 @@
+{{ if .Values.wordpress.service }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.wordpress.deployment.name }}-svc-{{ .Values.wordpress.deployment.version | replace "." "-" }}
+  labels:
+    app: {{ .Values.wordpress.deployment.name }}
+    version: {{ .Values.wordpress.deployment.version | quote }}
+    environment: {{ .Values.wordpress.deployment.environment }}
+spec:
+  type: {{ .Values.wordpress.service.type }}
+  ports:
+{{ toYaml .Values.wordpress.service.ports | trim | indent 2 }}
+  selector:
+    app: {{ .Values.wordpress.deployment.name }}
+    version: {{ .Values.wordpress.deployment.version | quote }}
+    environment: {{ .Values.wordpress.deployment.environment }}
+{{ end }}

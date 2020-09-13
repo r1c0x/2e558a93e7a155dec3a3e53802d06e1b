@@ -1,0 +1,59 @@
+wordpress:
+  deployment:
+    name: wordpress
+    image: wordpress
+    environment: test
+    version: 5.5.1-php7.4-apache
+    replicas: 1
+    maxUnavailable: 1
+    maxSurge: 1
+    ports:
+      - name: http
+        containerPort: 80
+    resources:
+      limits:
+        cpu: 250m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    volumemountspath: /var/www/html
+  service:
+    type: LoadBalancer
+    ports:
+      - name: http
+        port: 80
+  configmap:
+    data:
+      WORDPRESS_DB_HOST: wordpress-mysql-svc
+  pvcvolumes:
+    storage: 15Gi
+  secret: # base64 encoded secret, this is for testing purpose, NEVER SAVE ANY SECRETS IN GIT
+    data:
+      WORDPRESS_DB_USER: d29yZHByZXNz
+      WORDPRESS_DB_PASSWORD: bXlzZWNyZXQ=
+      WORDPRESS_DB_NAME: d29yZHByZXNz
+
+mysql:
+  deployment:
+    name: wordpress-mysql
+    image: mysql
+    version: 5.7
+    environment: test
+  service:
+    type: ClusterIP
+    ports:
+      - name: mysql
+        port: 3306
+  pvcvolumes:
+    storage: 15Gi
+  secret: # base64 encoded secret, this is for testing purpose, NEVER SAVE ANY SECRETS IN GIT
+    data:
+      MYSQL_ROOT_PASSWORD: bXlzZWNyZXQ=
+      MYSQL_DATABASE: d29yZHByZXNz
+      MYSQL_USER: d29yZHByZXNz
+      MYSQL_PASSWORD: bXlzZWNyZXQ=
+
+
+
+

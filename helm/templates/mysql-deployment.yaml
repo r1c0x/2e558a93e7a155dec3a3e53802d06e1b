@@ -1,0 +1,42 @@
+{{ if .Values.mysql.deployment }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.mysql.deployment.name }}
+  labels:
+    app: {{ .Values.mysql.deployment.name }}
+    environment: {{ .Values.mysql.deployment.environment }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.mysql.deployment.name }}
+      environment: {{ .Values.mysql.deployment.environment }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.mysql.deployment.name }}
+        environment: {{ .Values.mysql.deployment.environment }}
+    spec:
+      containers:
+      - image: {{ .Values.mysql.deployment.image }}:{{ .Values.mysql.deployment.version }}
+        name: mysql
+        args:
+          - "--ignore-db-dir=lost+found"
+        envFrom:
+        {{- if .Values.mysql.secret }}
+          - secretRef:
+              name: {{ .Values.mysql.deployment.name }}-secret
+        {{- end }}
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: {{ .Values.mysql.deployment.name }}-pvc
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: {{ .Values.mysql.deployment.name }}-pvc
+        persistentVolumeClaim:
+          claimName: {{ .Values.mysql.deployment.name }}-pvc
+{{ end }}
